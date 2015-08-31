@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.kie.api.KieServices;
+import org.kie.api.builder.Message;
 import org.kie.api.builder.ReleaseId;
 import org.kie.api.builder.Results;
 import org.kie.api.command.BatchExecutionCommand;
@@ -44,6 +45,14 @@ public class EmbeddedStatelessDecisionService implements StatelessDecisionServic
 
 	public void init() {
 		kieContainer = KieServices.Factory.get().getKieClasspathContainer();
+		Results results = kieContainer.verify();
+		if ( results.getMessages().size() > 0 ){
+			LOGGER.error("there are compilation errors with your rules or processes!");
+			for ( Message message : results.getMessages() ){
+				LOGGER.error(message.toString());
+			}
+		}
+
 		try {
 			StatelessKieSession kieSession = kieContainer.newStatelessKieSession();
 			kieSession.getKieBase(); // this loads the rules and builds the base so the first execution isn't slow
